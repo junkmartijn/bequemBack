@@ -40,8 +40,9 @@ public:
 	~SettingsManager();
 	void AddTask(Task task);
 	void RemoveTask(Task task);
+	void RemoveTasks();
 	Config Config2;
-	Vector<Task> Tasks;
+	//Vector<Task> Tasks;
 	String TasksJson;
 private:
 	void LoadConfig();
