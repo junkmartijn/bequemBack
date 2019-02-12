@@ -38,6 +38,7 @@ class SettingsManager
 public:
 	SettingsManager();
 	~SettingsManager();
+	void CreateEmptyConfig();
 	void AddTask(Task task);
 	void RemoveTask(Task task);
 	void RemoveTasks();
