@@ -10,15 +10,13 @@
 #include "config.h"
 
 SettingsManager settingsManager;
-
 ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
-String getContentType(String filename); // convert the file extension to the MIME type
-bool handleFileRead(String path);       // send the right file to the client (if it exists)
-
 #pragma region setup
 void setup() {
+	SPIFFS.begin();
+	
 	Serial.begin(115200);         // Start the Serial communication to send messages to the computer
 	delay(10);
 	wifiMulti.addAP(wifiSsid, wifiPass);
@@ -62,7 +60,7 @@ void loop(void) {
 #pragma region fileserver
 
 bool handleFileRead(String path) { // send the right file to the client (if it exists)
-	SPIFFS.begin();
+	
 	Serial.println("handleFileRead: " + path);
 	if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
 	String contentType = getContentType(path);            // Get the MIME type
@@ -73,7 +71,7 @@ bool handleFileRead(String path) { // send the right file to the client (if it e
 		return true;
 	}
 	Serial.println("\tFile Not Found");
-	SPIFFS.end();
+	
 	return false;                                         // If the file doesn't exist, return false
 }
 

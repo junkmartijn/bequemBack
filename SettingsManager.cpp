@@ -21,9 +21,27 @@ void SettingsManager::LoadConfig()
 	Config2.loaded = false;
 
 	SPIFFS.begin();
+
+	if (!SPIFFS.exists(configFileName)) {
+		Serial.println("Creating empty file!");
+		auto configFileTemp = SPIFFS.open(configFileName, "w");
+		StaticJsonBuffer<200> jsonBuffer;
+		JsonObject& json = jsonBuffer.createObject();
+		json["serverName"] = "initial";
+		JsonArray& tasks = json.createNestedArray("tasks");
+
+		configFileTemp = SPIFFS.open(configFileName, "w");
+		if (!configFileTemp) {
+			Serial.println("Failed to open config file for writing");
+		}
+
+		json.printTo(configFileTemp);
+		configFileTemp.close();
+	}
+
 	File configFile = SPIFFS.open(configFileName, "r");
 	if (!configFile) {
-		Serial.println("Failed to open config file (in GetConfig)");
+		Serial.println("Failed to open config file (in LoadConfig)");
 	}
 
 	size_t size = configFile.size();
@@ -53,6 +71,9 @@ void SettingsManager::LoadConfig()
 	const char* val = json[serverName];
 	Config2.serverName = val;
 
+	if (!json.containsKey("tasks")) {
+		json.createNestedArray("tasks");
+	}
 	JsonArray& tasks = json["tasks"];
 	
 	TasksJson = "";
@@ -198,15 +219,15 @@ void SettingsManager::RemoveTask(Task task)
 		Serial.println("Removing old config file");
 		SPIFFS.remove(configFileName);
 	}
-	
+
 	File newConfigFile = SPIFFS.open(configFileName, "w");
 	if (!newConfigFile) {
 		Serial.println("Failed to open config file for writing");
 		//return false;
 	}
 
-	
-	
+
+
 
 	Serial.println("After set");
 	json.prettyPrintTo(Serial);
@@ -275,7 +296,7 @@ void SettingsManager::RemoveTasks()
 		Serial.println("Failed to open config file for writing");
 		//return false;
 	}
-	   	 
+
 	Serial.println("After set");
 	json.prettyPrintTo(Serial);
 
