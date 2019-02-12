@@ -16,10 +16,10 @@ struct Config {
 };
 
 struct Task {
-	Task() { dow = (timeDayOfWeek_t)0, hour = 0, min = 0, state = false; }
-	Task(int h, int m, bool s) { dow = (timeDayOfWeek_t)0, hour = h, min = m, state = s; }
-	Task(timeDayOfWeek_t d, int h, int m, bool s) { dow = d; hour = h, min = m, state = s; }
-	timeDayOfWeek_t dow;
+	Task() { dow = 0, hour = 0, min = 0, state = false; }
+	Task(int h, int m, bool s) { dow = 0, hour = h, min = m, state = s; }
+	Task(int d, int h, int m, bool s) { dow = d; hour = h, min = m, state = s; }
+	int dow; //0=all days,1=Sunday etc
 	int hour;
 	int min;
 	bool state;	
@@ -38,9 +38,11 @@ class SettingsManager
 public:
 	SettingsManager();
 	~SettingsManager();
-	void AddTask(Task newTask);
+	void AddTask(Task task);
+	void RemoveTask(Task task);
 	Config Config2;
 	Vector<Task> Tasks;
+	String TasksJson;
 private:
 	void LoadConfig();
 };

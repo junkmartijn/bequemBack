@@ -15,8 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ESP12E_webserver_playground.ino" />
     <None Include="config.h" />
+    <None Include="ESP12E_webserver_playground.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.ESP12E_webserver_playground.vsarduino.h">

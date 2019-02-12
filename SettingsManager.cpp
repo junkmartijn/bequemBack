@@ -5,6 +5,7 @@ const String serverName = "serverName";
 
 Config Config2;
 Vector<Task> Tasks;
+String TasksJson;
 
 SettingsManager::SettingsManager()
 {
@@ -53,6 +54,10 @@ void SettingsManager::LoadConfig()
 	Config2.serverName = val;
 
 	JsonArray& tasks = json["tasks"];
+	
+	TasksJson = "";
+	tasks.prettyPrintTo(TasksJson);
+
 	for (int i = 0; i < tasks.size(); i++) {
 		int h = tasks[i]["h"];
 		int m = tasks[i]["m"];
@@ -64,7 +69,7 @@ void SettingsManager::LoadConfig()
 	Config2.loaded = true;
 }
 
-void SettingsManager::AddTask(Task newTask)
+void SettingsManager::AddTask(Task task)
 {
 	SPIFFS.begin();
 
@@ -102,20 +107,106 @@ void SettingsManager::AddTask(Task newTask)
 	//CP
 
 	json["serverName"] = millis();
-	JsonArray& tasks = json["tasks"];
+	JsonArray& tasksJson = json["tasks"];
 
-	JsonObject& task = jsonBuffer.createObject();
-	task["d"] = (int)newTask.dow;
-	task["h"] = newTask.hour;
-	task["m"] = newTask.min;
-	task["s"] = newTask.state ? 1 : 0;
-	tasks.add(task);
+	JsonObject& taskJson = jsonBuffer.createObject();
+	taskJson["d"] = task.dow;
+	taskJson["h"] = task.hour;
+	taskJson["m"] = task.min;
+	taskJson["s"] = task.state ? 1 : 0;
+	tasksJson.add(taskJson);
+
+	if (SPIFFS.exists(configFileName)) {
+		Serial.println("Removing old config file");
+		SPIFFS.remove(configFileName);
+	}
 
 	File newConfigFile = SPIFFS.open("/config.json", "w");
 	if (!newConfigFile) {
 		Serial.println("Failed to open config file for writing");
 		//return false;
 	}
+
+	Serial.println("After set");
+	json.prettyPrintTo(Serial);
+
+	json.printTo(newConfigFile);
+
+	newConfigFile.close();
+
+	LoadConfig();
+}
+
+void SettingsManager::RemoveTask(Task task)
+{
+	SPIFFS.begin();
+
+	//CP
+	if (SPIFFS.exists(configFileName)) {
+		Serial.println("configFile bestaat (in RemoveTask)");
+	}
+	else {
+		Serial.println("configFile bestaat niet (in RemoveTask)");
+	}
+
+	File configFile = SPIFFS.open(configFileName, "r");
+	if (!configFile) {
+		Serial.println("Failed to open config file (in RemoveTask)");
+		//   return "";
+	}
+
+	size_t size = configFile.size();
+	if (size > 1024) {
+		Serial.println("Config file size is too large");
+		//  return "";
+	}
+
+	// Allocate a buffer to store contents of the file.
+	std::unique_ptr<char[]> buf(new char[size]);
+
+	// We don't use String here because ArduinoJson library requires the input
+	// buffer to be mutable. If you don't use ArduinoJson, you may as well
+	// use configFile.readString instead.
+	configFile.readBytes(buf.get(), size);
+	configFile.close();
+
+	DynamicJsonBuffer jsonBuffer;
+	JsonObject& json = jsonBuffer.parseObject(buf.get());
+	//CP
+
+	json["serverName"] = millis();
+	JsonArray& tasksJson = json["tasks"];
+
+	int indexToRemove = -1;
+	for (int i = 0; i < tasksJson.size(); i++)
+	{
+		auto x = tasksJson[i];
+		if ((int)x["d"] == int(task.dow)
+			&& (int)x["h"] == int(task.hour)
+			&& (int)x["m"] == int(task.min)
+			&& (int)x["s"] == int(task.state)) {
+			indexToRemove = i;
+			break;
+		}
+	}
+
+	if (indexToRemove != -1) {
+		tasksJson.remove(indexToRemove);
+	}
+
+	if (SPIFFS.exists(configFileName)) {
+		Serial.println("Removing old config file");
+		SPIFFS.remove(configFileName);
+	}
+	
+	File newConfigFile = SPIFFS.open(configFileName, "w");
+	if (!newConfigFile) {
+		Serial.println("Failed to open config file for writing");
+		//return false;
+	}
+
+	
+	
 
 	Serial.println("After set");
 	json.prettyPrintTo(Serial);
