@@ -17,9 +17,8 @@ struct Config {
 
 struct Task {
 	Task() { dow = 0, hour = 0, min = 0, state = false; }
-	Task(int h, int m, bool s) { dow = 0, hour = h, min = m, state = s; }
 	Task(int d, int h, int m, bool s) { dow = d; hour = h, min = m, state = s; }
-	int dow; //0=all days,1=Sunday etc
+	int dow; //1=Sunday etc, 8=all days
 	int hour;
 	int min;
 	bool state;	

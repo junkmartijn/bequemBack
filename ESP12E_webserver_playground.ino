@@ -16,7 +16,7 @@ ESP8266WebServer server(80);    // Create a webserver object that listens for HT
 #pragma region setup
 void setup() {
 	SPIFFS.begin();
-	
+
 	Serial.begin(115200);         // Start the Serial communication to send messages to the computer
 	delay(10);
 	wifiMulti.addAP(wifiSsid, wifiPass);
@@ -46,8 +46,20 @@ void setup() {
 	server.on("/api/task", HTTP_DELETE, WebApiTaskDelete);
 	//server.on("/api/", WebApiNotFound);
 	server.onNotFound([]() {
-		if (!handleFileRead(server.uri()))                  // send it if it exists
-			server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
+		if (server.method() == HTTP_OPTIONS)
+		{
+			SendHeaders();
+			server.send(204);
+		}
+		else
+		{
+			Serial.println("NotFound, uri: " + server.uri() + " method: " + server.method());
+			if (!handleFileRead(server.uri()))                  // send it if it exists
+			{
+				server.send(404, "text/plain", "404: Not Found");// otherwise, respond with a 404 (Not Found) error
+			}
+		}
+
 	});
 	Serial.println("HTTP server started");
 }
@@ -60,7 +72,7 @@ void loop(void) {
 #pragma region fileserver
 
 bool handleFileRead(String path) { // send the right file to the client (if it exists)
-	
+
 	Serial.println("handleFileRead: " + path);
 	if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
 	String contentType = getContentType(path);            // Get the MIME type
@@ -71,7 +83,7 @@ bool handleFileRead(String path) { // send the right file to the client (if it e
 		return true;
 	}
 	Serial.println("\tFile Not Found");
-	
+
 	return false;                                         // If the file doesn't exist, return false
 }
 
@@ -88,24 +100,39 @@ String getContentType(String filename) { // convert the file extension to the MI
 #pragma region webapi methods
 void WebApiTasksGet()
 {
+	SendHeaders();
 	server.send(200, "text/json", settingsManager.TasksJson);
+}
+
+void SendHeaders() {
+	server.sendHeader("Access-Control-Allow-Origin", "*");
+	server.sendHeader("Access-Control-Max-Age", "10000");
+	server.sendHeader("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+	server.sendHeader("Access-Control-Allow-Headers", "*");
 }
 
 void WebApiTaskPost()
 {
+	SendHeaders();
+
 	if (server.hasArg("plain") == false) {
 		server.send(404, "text/plain", "Body not received");
 		return;
 	}
 	auto taskString = server.arg("plain");
+
+	Serial.println("AddTask1: " + taskString);
+
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject& taskJson = jsonBuffer.parseObject(taskString);
 
-	if (!taskJson.containsKey("h")
+	if (!taskJson.containsKey("d")
+		|| !taskJson.containsKey("h")
 		|| !taskJson.containsKey("m")
 		|| !taskJson.containsKey("s")
 		) {
-		server.send(404, "text/plain", "Invalid body");
+		server.send(404, "text/plain", "Invalid body:" + taskString);
+		return;
 	}
 
 	int d = taskJson["d"];// 0 if not provided
@@ -113,65 +140,84 @@ void WebApiTaskPost()
 	int m = taskJson["m"];
 	int s = taskJson["s"];
 
-	if (d < 0 || d>7
+	if (d < 1 || d>8 //8 is all days
 		|| h < 0 || h>23
 		|| m < 0 || m>59
 		|| s < 0 || s>1) {
 		server.send(404, "text/plain", "Invalid body");
+		return;
 	}
+
+	Serial.println("AddTask2: " + taskString);
 
 	auto task = Task(d, h, m, (bool)s);
 
 	settingsManager.AddTask(task);
 
-	String message = "Body received:\n";
-	message += "dow:" + (String)d;
-	message += "hour:" + (String)h;
-	message += "min:" + (String)m;
-	message += "state:" + (String)s;
-	message += "\n";
+	String message = "Body received:";
+	message += " dow:" + (String)d;
+	message += " hour:" + (String)h;
+	message += " min:" + (String)m;
+	message += " state:" + (String)s;
+	//message += "\n";
+
+	Serial.println("AddTask: " + message);
 
 	server.send(200, "text/plain", message);
 }
 
 void WebApiTaskDelete() {
-	if (server.hasArg("plain") == false) {
-		server.send(404, "text/plain", "Body not received");
+	SendHeaders();
+
+	String messageArgs = "";
+	for (int i = 0; i < server.args(); i++) {
+
+		messageArgs += "Arg no" + (String)i + " – > ";
+		messageArgs += server.argName(i) + ": ";
+		messageArgs += server.arg(i) + "\n";
+
+	}
+	Serial.print("Args: ");
+	Serial.println(messageArgs);
+
+
+	if (!server.hasArg("d")
+		|| !server.hasArg("h")
+		|| !server.hasArg("m")
+		|| !server.hasArg("s")
+		) {
+		server.send(404, "text/plain", "Invalid request");
 		return;
 	}
-	auto taskString = server.arg("plain");
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject& taskJson = jsonBuffer.parseObject(taskString);
 
-	if (!taskJson.containsKey("h")
-		|| !taskJson.containsKey("m")
-		|| !taskJson.containsKey("s")
-		) {
-		server.send(404, "text/plain", "Invalid body");
-	}
 
-	int d = taskJson["d"];// 0 if not provided
-	int h = taskJson["h"];
-	int m = taskJson["m"];
-	int s = taskJson["s"];
+	int d = server.arg("d").toInt();
+	int h = server.arg("h").toInt();
+	int m = server.arg("m").toInt();
+	int s = server.arg("s").toInt();
+
+	Serial.println("d" + (String)d + " h" + (String)h + " m" + (String)m + " s" + (String)s);
 
 	if (d < 0 || d>7
 		|| h < 0 || h>23
 		|| m < 0 || m>59
 		|| s < 0 || s>1) {
-		server.send(404, "text/plain", "Invalid body");
+		server.send(404, "text/plain", "Invalid request");
+		return;
 	}
 
 	auto task = Task(d, h, m, (bool)s);
 
 	settingsManager.RemoveTask(task);
 
-	String message = "Body received:\n";
-	message += "dow:" + (String)d;
-	message += "hour:" + (String)h;
-	message += "min:" + (String)m;
-	message += "state:" + (String)s;
-	message += "\n";
+	String message = "Body received:";
+	message += " dow:" + (String)d;
+	message += " hour:" + (String)h;
+	message += " min:" + (String)m;
+	message += " state:" + (String)s;
+	//message += "\n";
+
+	Serial.println("DeleteTask: " + message);
 
 	server.send(200, "text/plain", message);
 }

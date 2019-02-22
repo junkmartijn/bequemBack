@@ -31,6 +31,8 @@ void SettingsManager::CreateEmptyConfig()
 
 	json.printTo(configFileTemp);
 	configFileTemp.close();
+
+	TasksJson = "";
 }
 
 void SettingsManager::LoadConfig()
