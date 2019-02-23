@@ -13,9 +13,17 @@ SettingsManager settingsManager;
 ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
+const int output_pin = 2;
+
 #pragma region setup
 void setup() {
 	SPIFFS.begin();
+
+	pinMode(output_pin, OUTPUT);
+	digitalWrite(output_pin, HIGH);
+
+	setTime(16, 33, 0, 23, 2, 2019);
+
 
 	Serial.begin(115200);         // Start the Serial communication to send messages to the computer
 	delay(10);
@@ -44,6 +52,7 @@ void setup() {
 	server.on("/api/tasks", HTTP_DELETE, WebApiTasksDelete);
 	server.on("/api/task", HTTP_POST, WebApiTaskPost);
 	server.on("/api/task", HTTP_DELETE, WebApiTaskDelete);
+	server.on("/api/alarms", HTTP_POST, WebApiAlarms);
 	//server.on("/api/", WebApiNotFound);
 	server.onNotFound([]() {
 		if (server.method() == HTTP_OPTIONS)
@@ -62,12 +71,44 @@ void setup() {
 
 	});
 	Serial.println("HTTP server started");
+
+	/*auto onAction = []() {digitalWrite(output_pin, HIGH); };
+	auto offAction = []() {digitalWrite(output_pin, LOW); };
+*/
+	settingsManager.MakeAlarms(ActionOn, ActionOff);
 }
 #pragma endregion setup
 
+
 void loop(void) {
 	server.handleClient();
+	Alarm.delay(1);
 }
+
+#pragma region actions
+
+
+void ActionOn() {
+	Serial.println("ActionOn");
+	Serial.println((String)hour() + ":" + (String)minute());
+	bool forceConstant = LOW;
+	if (forceConstant == LOW) {
+		digitalWrite(output_pin, LOW);
+	}
+}
+
+void ActionOff() {
+	Serial.println("ActionOff");
+	Serial.println((String)hour()+":"+(String)minute());
+	bool forceConstant = LOW;
+	if (forceConstant == LOW) {
+		digitalWrite(output_pin, HIGH);
+	}
+}
+#pragma endregion actions
+
+
+
 
 #pragma region fileserver
 
@@ -152,7 +193,7 @@ void WebApiTaskPost()
 
 	auto task = Task(d, h, m, (bool)s);
 
-	settingsManager.AddTask(task);
+	auto result = settingsManager.AddTask(task);
 
 	String message = "Body received:";
 	message += " dow:" + (String)d;
@@ -163,7 +204,7 @@ void WebApiTaskPost()
 
 	Serial.println("AddTask: " + message);
 
-	server.send(200, "text/plain", message);
+	server.send(200, "text/plain", result);
 }
 
 void WebApiTaskDelete() {
@@ -198,7 +239,7 @@ void WebApiTaskDelete() {
 
 	Serial.println("d" + (String)d + " h" + (String)h + " m" + (String)m + " s" + (String)s);
 
-	if (d < 0 || d>7
+	if (d < 0 || d>8
 		|| h < 0 || h>23
 		|| m < 0 || m>59
 		|| s < 0 || s>1) {
@@ -219,13 +260,19 @@ void WebApiTaskDelete() {
 
 	Serial.println("DeleteTask: " + message);
 
-	server.send(200, "text/plain", message);
+	//server.send(200, "text/plain", message);
+	server.send(200, "text/plain", "Success");
 }
 
 void WebApiTasksDelete() {
 
 	settingsManager.RemoveTasks();
 	server.send(200, "text/plain", "Success");
+}
+
+void WebApiAlarms() {
+	auto result = settingsManager.MakeAlarms(ActionOn, ActionOff);
+	server.send(200, "text/plain", result);
 }
 
 void WebApiNotFound() {

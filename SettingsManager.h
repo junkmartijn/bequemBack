@@ -6,6 +6,8 @@
 #include <FS.h>
 #include <ArduinoJson.h>
 //#include <Vector.h>
+#include <Time.h>
+#include <TimeLib.h>
 #include <TimeAlarms.h>
 
 
@@ -38,9 +40,10 @@ public:
 	SettingsManager();
 	~SettingsManager();
 	void CreateEmptyConfig();
-	void AddTask(Task task);
+	String AddTask(Task task);
 	void RemoveTask(Task task);
 	void RemoveTasks();
+	String MakeAlarms(OnTick_t actionOn, OnTick_t actionOff);
 	Config Config2;
 	//Vector<Task> Tasks;
 	String TasksJson;
