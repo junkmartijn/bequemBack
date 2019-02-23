@@ -23,7 +23,7 @@ void SettingsManager::CreateEmptyConfig()
 	auto configFileTemp = SPIFFS.open(configFileName, "w");
 	StaticJsonBuffer<200> jsonBuffer;
 	JsonObject& json = jsonBuffer.createObject();
-	json["serverName"] = "initial";
+	json[serverName] = "initial";
 	JsonArray& tasks = json.createNestedArray("tasks");
 
 	configFileTemp = SPIFFS.open(configFileName, "w");
@@ -136,7 +136,7 @@ String SettingsManager::AddTask(Task task)
 	JsonObject& json = jsonBuffer.parseObject(buf.get());
 	//CP
 
-	json["serverName"] = millis();
+	json[serverName] = millis();
 	JsonArray& tasksJson = json["tasks"];
 
 	for (int i = 0; i < tasksJson.size(); i++)
@@ -223,7 +223,7 @@ void SettingsManager::RemoveTask(Task task)
 
 	Serial.println("void SettingsManager::RemoveTask(Task task) 2");
 
-	json["serverName"] = millis();
+	json[serverName] = millis();
 	JsonArray& tasksJson = json["tasks"];
 
 	Serial.println("indexToRemove bepalen");
@@ -306,7 +306,7 @@ void SettingsManager::RemoveTasks()
 	//JsonObject& json = jsonBuffer.parseObject(buf.get());
 	////CP
 
-	//json["serverName"] = millis();
+	//json[serverName] = millis();
 	//JsonArray& tasksJson = json["tasks"];
 
 	//Serial.println("Aantal taken te verwijderen: " + String(tasksJson.size()));
@@ -337,7 +337,7 @@ void SettingsManager::RemoveTasks()
 	//LoadConfig();
 }
 
-String SettingsManager::MakeAlarms(OnTick_t actionOn, OnTick_t actionOff)
+String SettingsManager::MakeAlarms(void actionOn(), void actionOff())
 {
 
 
@@ -378,7 +378,7 @@ String SettingsManager::MakeAlarms(OnTick_t actionOn, OnTick_t actionOff)
 
 	Serial.println("void SettingsManager::RemoveTask(Task task) 2");
 
-	json["serverName"] = millis();
+	json[serverName] = millis();
 	JsonArray& tasksJson = json["tasks"];
 
 	for (int i = 0; i < 255; i++) {
@@ -393,22 +393,14 @@ String SettingsManager::MakeAlarms(OnTick_t actionOn, OnTick_t actionOff)
 		const int d = (int)t["d"];
 		const int h = (int)t["h"];
 		const int m = (int)t["m"];
-		const int s = (int)t["s"];
-
-		OnTick_t action;
-		if (s == 0) {
-			action = actionOff;
-		}
-		else {
-			action = actionOn;
-		}
+		const bool s = (bool)t["s"];
 
 		int id;
 		if (d == 8) {
-			id = Alarm.alarmRepeat(h, m, (const int)0, action);
+			id = Alarm.alarmRepeat(h, m, (const int)0, s ? actionOn : actionOff);
 		}
 		else {
-			id = Alarm.alarmRepeat((timeDayOfWeek_t)d, h, m, (const int)0, action);
+			id = Alarm.alarmRepeat((timeDayOfWeek_t)d, h, m, (const int)0, s ? actionOn : actionOff);
 		}
 		if (id != 255) {
 			aantal++;
