@@ -6,11 +6,10 @@
 #include <FS.h>   // Include the SPIFFS library
 #include <ArduinoJson.h>
 #include "SettingsManager.h"
-#include <Vector.h>
 #include "config.h"
 
-SettingsManager settingsManager;
-ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
+SettingsManager settings_manager;
+ESP8266WiFiMulti wifi_multi;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
 const int output_pin = 2;
@@ -27,10 +26,10 @@ void setup() {
 
 	Serial.begin(115200);         // Start the Serial communication to send messages to the computer
 	delay(10);
-	wifiMulti.addAP(wifiSsid, wifiPass);
+	wifi_multi.addAP(wifiSsid, wifiPass);
 
 	Serial.println("Connecting ...");
-	while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
+	while (wifi_multi.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
 		delay(250);
 		Serial.print('.');
 	}
@@ -72,10 +71,7 @@ void setup() {
 	});
 	Serial.println("HTTP server started");
 
-	/*auto onAction = []() {digitalWrite(output_pin, HIGH); };
-	auto offAction = []() {digitalWrite(output_pin, LOW); };
-*/
-	settingsManager.MakeAlarms(ActionOn, ActionOff);
+	settings_manager.MakeAlarms(ActionOn, ActionOff);
 }
 #pragma endregion setup
 
@@ -90,18 +86,18 @@ void loop(void) {
 
 void ActionOn() {
 	Serial.println("ActionOn");
-	Serial.println((String)hour() + ":" + (String)minute());
-	bool forceConstant = LOW;
-	if (forceConstant == LOW) {
+	Serial.println(String(hour()) + ":" + String(minute()));
+	const bool force_constant = LOW;
+	if (force_constant == LOW) {
 		digitalWrite(output_pin, LOW);
 	}
 }
 
 void ActionOff() {
 	Serial.println("ActionOff");
-	Serial.println((String)hour()+":"+(String)minute());
-	bool forceConstant = LOW;
-	if (forceConstant == LOW) {
+	Serial.println(String(hour())+":"+String(minute()));
+	const bool force_constant = LOW;
+	if (force_constant == LOW) {
 		digitalWrite(output_pin, HIGH);
 	}
 }
@@ -116,10 +112,10 @@ bool handleFileRead(String path) { // send the right file to the client (if it e
 
 	Serial.println("handleFileRead: " + path);
 	if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
-	String contentType = getContentType(path);            // Get the MIME type
+	const String content_type = getContentType(path);            // Get the MIME type
 	if (SPIFFS.exists(path)) {                            // If the file exists
-		File file = SPIFFS.open(path, "r");                 // Open it
-		size_t sent = server.streamFile(file, contentType); // And send it to the client
+		auto file = SPIFFS.open(path, "r");                 // Open it
+		size_t sent = server.streamFile(file, content_type); // And send it to the client
 		file.close();                                       // Then close the file again
 		return true;
 	}
@@ -128,7 +124,7 @@ bool handleFileRead(String path) { // send the right file to the client (if it e
 	return false;                                         // If the file doesn't exist, return false
 }
 
-String getContentType(String filename) { // convert the file extension to the MIME type
+String getContentType(const String& filename) { // convert the file extension to the MIME type
 	if (filename.endsWith(".html")) return "text/html";
 	else if (filename.endsWith(".css")) return "text/css";
 	else if (filename.endsWith(".js")) return "application/javascript";
@@ -142,7 +138,7 @@ String getContentType(String filename) { // convert the file extension to the MI
 void WebApiTasksGet()
 {
 	SendHeaders();
-	server.send(200, "text/json", settingsManager.TasksJson);
+	server.send(200, "text/json", settings_manager.TasksJson);
 }
 
 void SendHeaders() {
@@ -160,26 +156,26 @@ void WebApiTaskPost()
 		server.send(404, "text/plain", "Body not received");
 		return;
 	}
-	auto taskString = server.arg("plain");
+	auto task_string = server.arg("plain");
 
-	Serial.println("AddTask1: " + taskString);
+	Serial.println("AddTask1: " + task_string);
 
 	DynamicJsonBuffer jsonBuffer;
-	JsonObject& taskJson = jsonBuffer.parseObject(taskString);
+	auto& task_json = jsonBuffer.parseObject(task_string);
 
-	if (!taskJson.containsKey("d")
-		|| !taskJson.containsKey("h")
-		|| !taskJson.containsKey("m")
-		|| !taskJson.containsKey("s")
+	if (!task_json.containsKey("d")
+		|| !task_json.containsKey("h")
+		|| !task_json.containsKey("m")
+		|| !task_json.containsKey("s")
 		) {
-		server.send(404, "text/plain", "Invalid body:" + taskString);
+		server.send(404, "text/plain", "Invalid body:" + task_string);
 		return;
 	}
 
-	int d = taskJson["d"];// 0 if not provided
-	int h = taskJson["h"];
-	int m = taskJson["m"];
-	int s = taskJson["s"];
+	const int d = task_json["d"];// 0 if not provided
+	const int h = task_json["h"];
+	const int m = task_json["m"];
+	const int s = task_json["s"];
 
 	if (d < 1 || d>8 //8 is all days
 		|| h < 0 || h>23
@@ -189,19 +185,18 @@ void WebApiTaskPost()
 		return;
 	}
 
-	Serial.println("AddTask2: " + taskString);
+	Serial.println("AddTask2: " + task_string);
 
-	auto task = Task(d, h, m, (bool)s);
+	const auto task = Task(d, h, m, bool(s));
 
-	auto result = settingsManager.AddTask(task);
+	const auto result = settings_manager.AddTask(task);
 
 	String message = "Body received:";
-	message += " dow:" + (String)d;
-	message += " hour:" + (String)h;
-	message += " min:" + (String)m;
-	message += " state:" + (String)s;
-	//message += "\n";
-
+	message += " dow:" + String(d);
+	message += " hour:" + String(h);
+	message += " min:" + String(m);
+	message += " state:" + String(s);
+	
 	Serial.println("AddTask: " + message);
 
 	server.send(200, "text/plain", result);
@@ -210,16 +205,16 @@ void WebApiTaskPost()
 void WebApiTaskDelete() {
 	SendHeaders();
 
-	String messageArgs = "";
-	for (int i = 0; i < server.args(); i++) {
+	String message_args = "";
+	for (auto i = 0; i < server.args(); i++) {
 
-		messageArgs += "Arg no" + (String)i + " – > ";
-		messageArgs += server.argName(i) + ": ";
-		messageArgs += server.arg(i) + "\n";
+		message_args += "Arg no" + String(i) + " – > ";
+		message_args += server.argName(i) + ": ";
+		message_args += server.arg(i) + "\n";
 
 	}
 	Serial.print("Args: ");
-	Serial.println(messageArgs);
+	Serial.println(message_args);
 
 
 	if (!server.hasArg("d")
@@ -232,12 +227,12 @@ void WebApiTaskDelete() {
 	}
 
 
-	int d = server.arg("d").toInt();
-	int h = server.arg("h").toInt();
-	int m = server.arg("m").toInt();
-	int s = server.arg("s").toInt();
+	const int d = server.arg("d").toInt();
+	const int h = server.arg("h").toInt();
+	const int m = server.arg("m").toInt();
+	const int s = server.arg("s").toInt();
 
-	Serial.println("d" + (String)d + " h" + (String)h + " m" + (String)m + " s" + (String)s);
+	Serial.println("d" + String(d) + " h" + String(h) + " m" + String(m) + " s" + String(s));
 
 	if (d < 0 || d>8
 		|| h < 0 || h>23
@@ -247,16 +242,15 @@ void WebApiTaskDelete() {
 		return;
 	}
 
-	auto task = Task(d, h, m, (bool)s);
+	const auto task = Task(d, h, m, bool(s));
 
-	settingsManager.RemoveTask(task);
+	settings_manager.RemoveTask(task);
 
 	String message = "Body received:";
-	message += " dow:" + (String)d;
-	message += " hour:" + (String)h;
-	message += " min:" + (String)m;
-	message += " state:" + (String)s;
-	//message += "\n";
+	message += " dow:" + String(d);
+	message += " hour:" + String(h);
+	message += " min:" + String(m);
+	message += " state:" + String(s);
 
 	Serial.println("DeleteTask: " + message);
 
@@ -266,12 +260,12 @@ void WebApiTaskDelete() {
 
 void WebApiTasksDelete() {
 
-	settingsManager.RemoveTasks();
+	settings_manager.RemoveTasks();
 	server.send(200, "text/plain", "Success");
 }
 
 void WebApiAlarms() {
-	auto result = settingsManager.MakeAlarms(ActionOn, ActionOff);
+	const auto result = settings_manager.MakeAlarms(ActionOn, ActionOff);
 	server.send(200, "text/plain", result);
 }
 

@@ -43,7 +43,7 @@ public:
 	String AddTask(Task task);
 	void RemoveTask(Task task);
 	void RemoveTasks();
-	String MakeAlarms(void actionOn(), void actionOff());
+	String MakeAlarms(void action_on(), void action_off());
 	Config Config2;
 	//Vector<Task> Tasks;
 	String TasksJson;
