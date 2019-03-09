@@ -26,14 +26,6 @@ struct Task {
 	bool state;	
 };
 
-struct AA {
-	AA() { type= (dtAlarmPeriod_t)0, mins = (time_t)0, id = (AlarmId)255; }
-	AA(dtAlarmPeriod_t t, time_t m, AlarmId i) { type = t, mins = m, id = i; }
-	dtAlarmPeriod_t type;
-	time_t mins;
-	AlarmId id;
-};
-
 class SettingsManager
 {
 public:

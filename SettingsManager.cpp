@@ -131,6 +131,10 @@ String SettingsManager::AddTask(Task task)
 	json[server_name] = millis();
 	JsonArray& tasks_json = json["tasks"];
 
+	if (tasks_json.size()>=18) {
+		return "Maximaal aantal taken aangemaakt";
+	}
+
 	for (int i = 0; i < tasks_json.size(); i++)
 	{
 		auto t = tasks_json[i];

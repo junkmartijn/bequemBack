@@ -9,10 +9,11 @@
 #include "config.h"
 
 SettingsManager settings_manager;
-ESP8266WiFiMulti wifi_multi;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
+ESP8266WiFiMulti wifi_multi;
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
 const int output_pin = 2;
+bool force_constant = LOW;
 
 #pragma region setup
 void setup() {
@@ -21,10 +22,9 @@ void setup() {
 	pinMode(output_pin, OUTPUT);
 	digitalWrite(output_pin, HIGH);
 
-	setTime(16, 33, 0, 23, 2, 2019);
+	setTime(21, 15, 0, 5, 3, 2019);
 
-
-	Serial.begin(115200);         // Start the Serial communication to send messages to the computer
+	Serial.begin(115200);
 	delay(10);
 	wifi_multi.addAP(wifiSsid, wifiPass);
 
@@ -47,6 +47,9 @@ void setup() {
 	}
 
 	server.begin();
+	server.on("/api/time", HTTP_GET, WebApiTimeGet);
+	server.on("/api/heat", HTTP_GET, WebApiHeatGet);
+	server.on("/api/heat", HTTP_POST, WebApiHeatPost);
 	server.on("/api/tasks", HTTP_GET, WebApiTasksGet);
 	server.on("/api/tasks", HTTP_DELETE, WebApiTasksDelete);
 	server.on("/api/task", HTTP_POST, WebApiTaskPost);
@@ -87,7 +90,6 @@ void loop(void) {
 void ActionOn() {
 	Serial.println("ActionOn");
 	Serial.println(String(hour()) + ":" + String(minute()));
-	const bool force_constant = LOW;
 	if (force_constant == LOW) {
 		digitalWrite(output_pin, LOW);
 	}
@@ -95,8 +97,7 @@ void ActionOn() {
 
 void ActionOff() {
 	Serial.println("ActionOff");
-	Serial.println(String(hour())+":"+String(minute()));
-	const bool force_constant = LOW;
+	Serial.println(String(hour()) + ":" + String(minute()));
 	if (force_constant == LOW) {
 		digitalWrite(output_pin, HIGH);
 	}
@@ -135,17 +136,87 @@ String getContentType(const String& filename) { // convert the file extension to
 #pragma endregion fileserver
 
 #pragma region webapi methods
-void WebApiTasksGet()
-{
-	SendHeaders();
-	server.send(200, "text/json", settings_manager.TasksJson);
-}
-
 void SendHeaders() {
 	server.sendHeader("Access-Control-Allow-Origin", "*");
 	server.sendHeader("Access-Control-Max-Age", "10000");
 	server.sendHeader("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
 	server.sendHeader("Access-Control-Allow-Headers", "*");
+}
+
+void WebApiTimeGet() {
+	SendHeaders();
+	auto t = now();
+	char messageDateTime[] = ("1970-01-01 99:99:99");
+	sprintf(messageDateTime, "%d-%02d-%02d %02d:%02d:%02d", year(t), month(t), day(t), hour(t), minute(t), second(t));
+	server.send(200, "text/plain", messageDateTime);
+}
+
+void WebApiHeatGet() {
+	SendHeaders();
+	
+	DynamicJsonBuffer json_buffer;
+	JsonObject& status = json_buffer.createObject();
+	status["temporary"] = !digitalRead(output_pin) ;
+	status["permanent"] = force_constant;
+	
+	String status_json= "";
+	status.prettyPrintTo(status_json);
+	server.send(200, "text/json", status_json);
+}
+
+void WebApiHeatPost() {
+	SendHeaders();
+
+	if (server.hasArg("plain") == false) {
+		server.send(404, "text/plain", "Body not received");
+		return;
+	}
+	auto heat_string = server.arg("plain");
+
+	DynamicJsonBuffer jsonBuffer;
+	auto& heat_json = jsonBuffer.parseObject(heat_string);
+
+	if (!heat_json.containsKey("temporary") || !heat_json.containsKey("permanent")
+		) {
+		server.send(404, "text/plain", "Invalid body:" + heat_string);
+		return;
+	}
+
+	const int temporary = heat_json["temporary"];
+	const int permanent = heat_json["permanent"];
+
+	if (temporary < 0 || temporary>1 || permanent < 0 || permanent>1) {
+		server.send(404, "text/plain", "Invalid request");
+		return;
+	}
+
+	if (temporary == 1) {
+		if (digitalRead(output_pin)) {
+			digitalWrite(output_pin, LOW); //=verwarming aan
+		}
+		//return 1;
+	}
+	else if (temporary == 0) {
+		if (!digitalRead(output_pin)) {
+			digitalWrite(output_pin, HIGH); //=verwarming uit
+		}
+		//return 1;
+	}
+	if (permanent == 1) {
+		force_constant = HIGH;
+		//return 1;
+	}
+	else if (permanent == 0) {
+		force_constant = LOW;
+		//return 1;
+	}
+	server.send(200, "text/plain", "Success");
+}
+
+void WebApiTasksGet()
+{
+	SendHeaders();
+	server.send(200, "text/json", settings_manager.TasksJson);
 }
 
 void WebApiTaskPost()
@@ -196,7 +267,7 @@ void WebApiTaskPost()
 	message += " hour:" + String(h);
 	message += " min:" + String(m);
 	message += " state:" + String(s);
-	
+
 	Serial.println("AddTask: " + message);
 
 	server.send(200, "text/plain", result);
@@ -225,7 +296,6 @@ void WebApiTaskDelete() {
 		server.send(404, "text/plain", "Invalid request");
 		return;
 	}
-
 
 	const int d = server.arg("d").toInt();
 	const int h = server.arg("h").toInt();
