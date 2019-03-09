@@ -148,7 +148,15 @@ void WebApiTimeGet() {
 	auto t = now();
 	char messageDateTime[] = ("1970-01-01 99:99:99");
 	sprintf(messageDateTime, "%d-%02d-%02d %02d:%02d:%02d", year(t), month(t), day(t), hour(t), minute(t), second(t));
-	server.send(200, "text/plain", messageDateTime);
+
+	DynamicJsonBuffer json_buffer;
+	JsonObject& server_time= json_buffer.createObject();
+	server_time["datetime"] = messageDateTime;
+
+	String server_time_json = "";
+	server_time.prettyPrintTo(server_time_json);
+
+	server.send(200, "text/json", server_time_json);
 }
 
 void WebApiHeatGet() {
