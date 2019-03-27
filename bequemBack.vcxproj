@@ -14,7 +14,7 @@
     <ProjectGuid>{C5F80730-F44F-4478-BDAE-6634EFC2CA88}</ProjectGuid>
     <RootNamespace>
     </RootNamespace>
-    <ProjectName>ESP12E_webserver_playground</ProjectName>
+    <ProjectName>bequemBack</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,14 +69,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\bequemBack;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries\ESP8266WiFi\src;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries\ESP8266mDNS;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries\ESP8266WebServer\src;$(ProjectDir)..\..\..\Documents\Arduino\libraries\ArduinoJson\src;$(ProjectDir)..\..\..\Documents\Arduino\libraries\Time;$(ProjectDir)..\..\..\Documents\Arduino\libraries\TimeAlarms;$(ProjectDir)..\..\..\Documents\Arduino\libraries\NtpClient-master\src;$(ProjectDir)..\..\..\..\..\program files (x86)\microsoft visual studio\2017\enterprise\common7\ide\extensions\sivbitce.zrh\Micro Platforms\visualmicro\ide\libraries;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries;$(ProjectDir)..\..\..\Documents\Arduino\libraries;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266\libb64;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266\spiffs;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266\umm_malloc;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\variants\nodemcu;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\lwip2\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\libc\xtensa-lx106-elf\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)__vm\.bequemBack.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=80000000L;LWIP_OPEN_SRC;TCP_MSS=536;ARDUINO=10807;ARDUINO_ESP8266_NODEMCU;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -89,10 +85,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\bequemBack;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries\ESP8266WiFi\src;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries\ESP8266mDNS;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries\ESP8266WebServer\src;$(ProjectDir)..\..\..\Documents\Arduino\libraries\ArduinoJson\src;$(ProjectDir)..\..\..\Documents\Arduino\libraries\Time;$(ProjectDir)..\..\..\Documents\Arduino\libraries\TimeAlarms;$(ProjectDir)..\..\..\Documents\Arduino\libraries\NtpClient-master\src;$(ProjectDir)..\..\..\..\..\program files (x86)\microsoft visual studio\2017\enterprise\common7\ide\extensions\sivbitce.zrh\Micro Platforms\visualmicro\ide\libraries;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\libraries;$(ProjectDir)..\..\..\Documents\Arduino\libraries;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266\libb64;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266\spiffs;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\cores\esp8266\umm_malloc;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\variants\nodemcu;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\lwip2\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\libc\xtensa-lx106-elf\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;$(ProjectDir)..\..\..\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\2.4.1\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)__vm\.bequemBack.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;_VMDEBUG=1;__ets__;ICACHE_FLASH;F_CPU=80000000L;LWIP_OPEN_SRC;TCP_MSS=536;ARDUINO=10807;ARDUINO_ESP8266_NODEMCU;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -102,15 +98,17 @@
     <ProjectCapability Include="VisualMicro" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.h">
+    <None Include="bequemBack.ino">
       <FileType>CppCode</FileType>
     </None>
-    <None Include="ESP12E_webserver_playground.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SettingsManager.h" />
-    <ClInclude Include="__vm\.bequemBack.vsarduino.h" />
-    <ClInclude Include="__vm\.ESP12E_webserver_playground.vsarduino.h" />
+    <ClInclude Include="config.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="SettingsManager.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SettingsManager.cpp" />
@@ -123,7 +121,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties custom_esp8266_nodemcuv2_FlashErase="none" arduino.upload.port="COM5" />
+      <UserProperties arduino.upload.port="COM5" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
